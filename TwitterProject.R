@@ -6,58 +6,49 @@ library(quantmod)
 library(textclean)
 library(tm)
 library(syuzhet)
+library(wordcloud)
 
 
-#industry Twitter handles and tickers
+# Industry Twitter handles and tickers ------------------------------------
 energyTwitterHandles <- c('@exxonmobil', "@BP_plc", "@Chevron", "@conocophillips",
                           "@Total", "@MarathonPetroCo", "@Kinder_Morgan", "@ValeroEnergy", "@Phillips66Co", "@WeAreOxy")
 energyTickers <- c("XOM", "BP", "CVX", "COP", "TOT", "MPC", "KMI", "VLO", "PSX", "OXY")
-
 
 materialsTwitterHandles <- c("@Ecolab", "@SherwinWilliams", "@Intelligrated", "@BallCorpHQ", "@DowDuPontCo",
                             "@DowNewsroom", "@LyondellBasell", "@airproducts", "@NewmontGoldcorp", "@IntlPaperCo")
 materialTickers <- c("ECL", "SHW", "HON", "BLL", "DD", "DOW", "LYB", "APD", "NEM", "IN")
 
-
 industrialTwitterHandles <- c("@Boeing", "@LockheedMartin", "@3M", "@XylemInc", "@generalelectric",
                               "@CaterpillarInc", "@UnionPacific", "@Fiserv", "@JetBlue", "@UTC")
 industrialTickers <- c("BA", "LMT", "MMM", "XYL", "GE", "CAT", "UNP", "FISV", "JBLU", "UTX")
-
 
 consumerdiscretionTwitterHandles <- c("@amazon", "@HomeDepot", "@Disney", "@comcast", "@McDonalds", "@Nike", "@Starbucks", 
                                       "@BookingHoldings",  "@tjmaxx", "@Lowes")
 consumerDiscTickers <- c("AMZN", "HD", "DIS", "CMCSA", "MCD", "NKE", "SBUX", "BKNG", "TJX", "LOW")
 
-
 consumerStaplesTwitterHandles <- c("@Walmart", "@ProcterGamble", "@CocaCola", "@pepsi", "@InsidePMI",
                                    "@AltriaNews", "@Walgreens", "@EsteeLauder", "@KCCorp", "@Sysco")
 consumerStaplesTickers <- c("WMT", "PG", "KO", "PEP", "PM", "MO", "WBA", "EL", "KMB", "SYY")
-
 
 healthcareTwitterHandles <- c("@JNJCares", "@UnitedHealthGrp", "@Merck", "@pfizer", "@AbbottNews", 
                               "@Medtronic", "@Amgen", "@abbvie", "@thermofisher", "@LillyPad")
 healthcareTickers <- c("JNJ", "UNH", "MRK", "PFE", "ABT", "MDT", "AMGN", "ABBV", "TMO", "LLY")
 
-
 financeTwitterHandles <- c("@BHHSRealEstate", "@jpmorgan", "@BankofAmerica", "@WellsFargo", "@Citi", 
                            "@HSBC", "@usbank", "@FISGlobal", "@AmericanExpress", "@MorganStanley")
 financialTickers <- c("BRK", "JPM", "BAC", "WFC", "C", "HSBC", "USB", "FIS", "AXP", "MS")
-
 
 infoTechTwitterHandles <- c("@Apple", "@Microsoft", "@Google", "@facebook", "@Visa", "@Mastercard",
                             "@intel", "@Cisco", "@Oracle", "@Adobe")
 techTickers <- c("AAPL", "MSFT", "GOOG", "FB", "V", "MA", "INTC", "CSCO", "ORCL", "ADBE")
 
-
 teleCommTwitterHandles <- c("@ATT", "@verizon", "@TMobile", "@sprint", "@CenturyLink", "@IridiumComm", "@CogentCo",
                             "@USCellular", "@Vonage", "@bandwidth")
 telecommTickers <- c("T", "VZ", "TMUS", "S", "CTL", "IRDM", "CCOI", "UZB", "VG", "BAND")
 
-
 utilitiesTwitterHandles <- c("@nexteraenergy", "@DominionEnergy", "@SouthernCompany", "@DukeEnergy", 
                              "@AEPnews", "@Exelon", '@SempraEnergy', "@xcelenergy", "@PSEGNews", "@ConEdison")
 utilitiesTickers <- c("NEE", "D", "SO", "DUK", "AEP", "EXC", "SRE", "XEL", "PEG", "ED")
-
 
 realEstateTwitterHandles <- c("@SimonPropertyGp", "@Prologis", "@Weyerhaeuser", 
                               "@AvalonBay", "@PublicStorage", "@Welltower",
@@ -65,7 +56,8 @@ realEstateTwitterHandles <- c("@SimonPropertyGp", "@Prologis", "@Weyerhaeuser",
 realEstateTickers <- c("SPG", "PLD", "WY", "AVB", "PSA", "WELL", "O", "EQIX", "EQR", "DLR")
 
 
-# Getting Stock Data
+
+# Get stock data ----------------------------------------------------------
 getData <- function(tickers){
   stockEnv <- new.env()
   getSymbols(tickers, env = stockEnv)
@@ -81,6 +73,8 @@ getData <- function(tickers){
   return(mergeDf)
 }
 
+
+# Load stock data into dataframes -----------------------------------------
 energyStockDf <- getData(energyTickers)
 materialsDf <- getData(materialTickers)
 industrialDf <- getData(industrialTickers)
@@ -92,6 +86,7 @@ techDf <- getData(techTickers)
 telecommDf <- getData(telecommTickers)
 utilitiesDf <- getData(utilitiesTickers)
 realEstateDf <- getData(realEstateTickers)
+
 
 #Function that returns the difference of current days open with the previous day's closing price.
 getStockData <- function(companyTicker, dayInteger, companyDayDF, industryStockDf){
@@ -113,6 +108,8 @@ getStockData <- function(companyTicker, dayInteger, companyDayDF, industryStockD
   return (companyDayDF)
 }
 
+
+# Returns the tweets for each company
 findTweetsForCompanies <- function(handles, industryTickers, industryStockDf){
   handlesSector <- data.frame()
   i = 1
@@ -171,6 +168,8 @@ findTweetsForCompanies <- function(handles, industryTickers, industryStockDf){
   return (handlesSector)
 }
 
+
+# Loads tweets for each company
 energy <- findTweetsForCompanies(energyTwitterHandles, energyTickers, energyStockDf)
 materials <- findTweetsForCompanies(materialsTwitterHandles, materialTickers, materialsDf)
 industrial <- findTweetsForCompanies(industrialTwitterHandles, industrialTickers, industrialDf)
@@ -186,19 +185,14 @@ cleanTweets <- function(industryTweetsDf){
   industryTweetsDf$text <- gsub("  ", " ", industryTweetsDf$text)
   return (industryTweetsDf)
 }
+
+
+# Cleaning dataframes and getting sentiment -------------------------------
 gr <- cleanTweets(energy)
 s <- gsub("@[[:alnum:]]*", "", energy$text[2])
-gsub("  ", " ", s)
-
 ind <- Corpus(VectorSource(energy$text))
-iald$`1`
 d <- tm_map(ind, removeWords, stopwords())
 industryDoc <- DocumentTermMatrix(d)
-str(industryDoc)
-library(wordcloud)
 wordcloud(ind, min.freq = 15)
-
 sentiment <- get_nrc_sentiment(ind$content)
-sentiment[1,]
-energy$text[3]
 barplot(colSums(sentiment), col = rainbow(10))
